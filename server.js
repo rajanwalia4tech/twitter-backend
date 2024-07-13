@@ -4,6 +4,10 @@ const app = express()
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
+const dbHandler = require("./db");
+const routes = require("./routes");
+
+app.use("/",routes);
 
 app.get('/', function (request, response) {
     console.log("Query ",request.query);
@@ -18,5 +22,5 @@ app.post('/', function (request, response) {
 });
 
 app.listen(3000,function(){
-    console.log('App Listening to port 3000') 
+    console.log('App Listening to port 3000');
 });
