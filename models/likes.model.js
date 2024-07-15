@@ -1,4 +1,4 @@
-const commentSchema = new mongoose.Schema({
+const likeSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -7,10 +7,6 @@ const commentSchema = new mongoose.Schema({
   tweetId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Tweet",
-    required: true,
-  },
-  content: {
-    type: String,
     required: true,
   },
   isDeleted: {
@@ -23,6 +19,6 @@ const commentSchema = new mongoose.Schema({
   },
 });
 
-const Comment = mongoose.model("Comment", commentSchema);
+const Like = mongoose.model("Like", likeSchema);
 
-module.exports = Comment;
+module.exports = Like;
