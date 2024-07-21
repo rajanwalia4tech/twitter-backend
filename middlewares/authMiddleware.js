@@ -1,22 +1,31 @@
 import jwt from "jsonwebtoken";
+import User from "../models/users.model.js";
 
-const authenticate = (req, res, next) => {
-  const token = req.cookies.access_token;
+const authenticate = async (req, res, next) => {
+  const token =
+    req.cookies.access_token || req.headers.authorization?.split(" ")[1];
+
   if (!token) {
     return res
       .status(401)
-      .json({ message: "Access denied, no token provided." });
+      .json({ message: "Authentication failed, no token provided" });
   }
-
   try {
-    const decoded = jwt.verify(
-      token.split(" ")[1],
-      process.env.ACCESS_TOKEN_SECRET
-    );
-    req.user = decoded;
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const user = await User.findOne({ email: decoded.data });
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "Authentication failed, user not found" });
+    }
+
+    req.user = user;
     next();
   } catch (error) {
-    res.status(400).json({ message: "Invalid token." });
+    return res
+      .status(401)
+      .json({ message: "Authentication failed, invalid token" });
   }
 };
 
