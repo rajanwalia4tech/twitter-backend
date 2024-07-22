@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 const tweetSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -30,4 +31,4 @@ tweetSchema.pre("save", function (next) {
 
 const Tweet = mongoose.model("Tweet", tweetSchema);
 
-module.exports = Tweet;
+export default Tweet;

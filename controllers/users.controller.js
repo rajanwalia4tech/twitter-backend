@@ -12,8 +12,10 @@ const signupController = async (req, res) => {
         .json({ message: "Name, email, and password are required" });
     }
 
+    // Hash password
     const hashpassword = await bcrypt.hash(password, 10);
 
+    // Create new user
     const newUser = await User.create({
       name,
       gender,
@@ -46,31 +48,46 @@ const signupController = async (req, res) => {
 };
 
 const signInController = async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
-  }
-  const user = User.findOne({ email });
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
-  }
+  try {
+    const { email, password } = req.body;
 
-  const match = await bcrypt.compare(password, user.password);
-  if (match) {
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
     const token = jwt.sign({ data: email }, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: "1h",
     });
+
     res
       .cookie("access_token", "Bearer " + token, {
         expires: new Date(Date.now() + 8 * 3600000), // cookie will be removed after 8 hours
       })
       .status(200)
       .json({
-        message: "Logged in successfully",
-        user: user,
+        message: "User signed in successfully",
+        user: { ...user._doc, password: undefined }, // Avoid sending password back
       });
-  } else {
-    res.status(400).json({ message: "Invalid credentials" });
+  } catch (error) {
+    console.error("Error while signing in the user: ", error);
+    res.status(500).json({
+      message: "Error while signing in the user",
+      error: error.message,
+    });
   }
 };
 
@@ -111,7 +128,7 @@ const updateProfileController = async (req, res) => {
     const updatedUser = await User.findOneAndUpdate(
       { email: req.user.data },
       { $set: updateData },
-      { new: tue, rrunValidators: true }
+      { new: true, runValidators: true }
     ).select("-password");
 
     if (!updatedUser) {
@@ -131,49 +148,60 @@ const updateProfileController = async (req, res) => {
   }
 };
 
+
 const followUserController = async (req, res) => {
   try {
-    const userIdToFollow = req.params.userid;
-    const currentUserId = req.user.data;
-
-    if (currentUserId === userIdToFollow) {
+    console.log(1);
+    const { userId } = req.params;
+    const currentUserId = req.user._id;
+    console.log(2);
+    
+    if (currentUserId.toString() === userId) {
+      console.log(3);
       return res.status(400).json({ message: "You cannot follow yourself." });
     }
-
-    const userToFollow = await User.findById(userIdToFollow);
-    const currentUser = await User.findById(currentUserId);
-
-    if (!userToFollow || !currentUser) {
+    console.log(4);
+    console.log(userId);
+    const userToFollow = await User.findById(userId);
+    console.log(5);
+    if (!userToFollow) {
+      console.log(6);
       return res.status(404).json({ message: "User not found." });
     }
-
-    if (currentUser.following.includes(userIdToFollow)) {
-      return res
-        .status(400)
-        .json({ message: "You are already following this user." });
+    
+    console.log(7);
+    const currentUser = await User.findById(currentUserId);
+    
+    console.log(8);
+    if (currentUser.following.includes(userId)) {
+      console.log(9);
+      return res.status(400).json({ message: "You are already following this user." });
     }
-
-    currentUser.following.push(userIdToFollow);
+    
+    console.log(10);
+    currentUser.following.push(userId);
     userToFollow.followers.push(currentUserId);
-
+    console.log(11);
+    
     await currentUser.save();
     await userToFollow.save();
-
-    res.status(200).json({ message: "Successfully followed the user." });
+    console.log(11);
+    
+    res.status(200).json({ message: "User followed successfully." });
+    console.log(12);
   } catch (error) {
     console.error("Error following user: ", error);
-    res
-      .status(500)
-      .json({ message: "Error following user", error: error.message });
+    res.status(500).json({ message: "Error following user", error: error.message });
   }
 };
 
+
 const unfollowUserController = async (req, res) => {
   try {
-    const userIdToUnfollow = req.params.userid;
-    const currentUserId = req.user.data;
+    const userIdToUnfollow = req.params.userId; // Use userId to match your route parameter
+    const currentUserId = req.user._id;
 
-    if (currentUserId === userIdToUnfollow) {
+    if (String(currentUserId) === String(userIdToUnfollow)) {
       return res.status(400).json({ message: "You cannot unfollow yourself." });
     }
 
@@ -191,10 +219,10 @@ const unfollowUserController = async (req, res) => {
     }
 
     currentUser.following = currentUser.following.filter(
-      (id) => id !== userIdToUnfollow
+      (id) => String(id) !== String(userIdToUnfollow)
     );
     userToUnfollow.followers = userToUnfollow.followers.filter(
-      (id) => id !== currentUserId
+      (id) => String(id) !== String(currentUserId)
     );
 
     await currentUser.save();
@@ -208,6 +236,8 @@ const unfollowUserController = async (req, res) => {
       .json({ message: "Error unfollowing user", error: error.message });
   }
 };
+
+
 
 const getFollowersController = async (req, res) => {
   try {

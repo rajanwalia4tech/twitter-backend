@@ -11,16 +11,17 @@ import {
   getFolloweesController,
   updateProfilePictureController,
 } from "../controllers/users.controller.js";
-import { authenticate } from "../middleware/authMiddleware.js";
+import { authenticate } from "../middlewares/authMiddleware.js";
 
 router.post("/signup", signupController);
 router.post("/signin", signInController);
 router.get("/profile", authenticate, profileController);
 router.patch("/", authenticate, updateProfileController);
-router.put("/:userid/follow", authenticate, followUserController);
-router.delete("/:userid/follow", authenticate, unfollowUserController);
+router.put("/:userId/follow", authenticate, followUserController);
+router.delete("/:userId/follow", authenticate, unfollowUserController);
 router.get("/:userid/followers", authenticate, getFollowersController);
-router.get("/:userid/followees", authenticate, getFolloweesController);
+router.get("/:userid/followers", authenticate, getFolloweesController);
+// multer
 router.patch("/profile-picture", authenticate, updateProfilePictureController);
 
 export default router;
