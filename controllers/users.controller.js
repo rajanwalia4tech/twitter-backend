@@ -148,57 +148,48 @@ const updateProfileController = async (req, res) => {
   }
 };
 
-
 const followUserController = async (req, res) => {
   try {
-    console.log(1);
     const { userId } = req.params;
     const currentUserId = req.user._id;
-    console.log(2);
-    
+
     if (currentUserId.toString() === userId) {
-      console.log(3);
       return res.status(400).json({ message: "You cannot follow yourself." });
     }
-    console.log(4);
+
     console.log(userId);
     const userToFollow = await User.findById(userId);
-    console.log(5);
+
     if (!userToFollow) {
-      console.log(6);
       return res.status(404).json({ message: "User not found." });
     }
-    
-    console.log(7);
+
     const currentUser = await User.findById(currentUserId);
-    
-    console.log(8);
+
     if (currentUser.following.includes(userId)) {
-      console.log(9);
-      return res.status(400).json({ message: "You are already following this user." });
+      return res
+        .status(400)
+        .json({ message: "You are already following this user." });
     }
-    
-    console.log(10);
+
     currentUser.following.push(userId);
     userToFollow.followers.push(currentUserId);
-    console.log(11);
-    
+
     await currentUser.save();
     await userToFollow.save();
-    console.log(11);
-    
+
     res.status(200).json({ message: "User followed successfully." });
-    console.log(12);
   } catch (error) {
     console.error("Error following user: ", error);
-    res.status(500).json({ message: "Error following user", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error following user", error: error.message });
   }
 };
 
-
 const unfollowUserController = async (req, res) => {
   try {
-    const userIdToUnfollow = req.params.userId; // Use userId to match your route parameter
+    const userIdToUnfollow = req.params.userid; // Use userId to match your route parameter
     const currentUserId = req.user._id;
 
     if (String(currentUserId) === String(userIdToUnfollow)) {
@@ -237,11 +228,10 @@ const unfollowUserController = async (req, res) => {
   }
 };
 
-
-
 const getFollowersController = async (req, res) => {
   try {
     const userId = req.params.userid;
+    console.log(userId);
     const user = await User.findById(userId).populate(
       "followers",
       "name email profilePicture"
@@ -262,7 +252,7 @@ const getFollowersController = async (req, res) => {
   }
 };
 
-const getFolloweesController = async (req, res) => {
+const getFollowingsController = async (req, res) => {
   try {
     const userId = req.params.userid;
     const user = await User.findById(userId).populate(
@@ -274,7 +264,7 @@ const getFolloweesController = async (req, res) => {
     }
     res.status(200).json({
       message: "Followees retrieved successfully",
-      followees: user.following,
+      following: user.following,
     });
   } catch (error) {
     console.error("Error retrieving followees: ", error);
@@ -288,8 +278,8 @@ const getFolloweesController = async (req, res) => {
 const updateProfilePictureController = async (req, res) => {
   try {
     const { profilePicture } = req.body;
-    const userId = req.user.data;
-
+    const userId = req.user._id;
+    console.log(userId);
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { profilePicture },
@@ -321,6 +311,6 @@ export {
   followUserController,
   unfollowUserController,
   getFollowersController,
-  getFolloweesController,
+  getFollowingsController,
   updateProfilePictureController,
 };

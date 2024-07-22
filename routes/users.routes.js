@@ -8,7 +8,7 @@ import {
   followUserController,
   unfollowUserController,
   getFollowersController,
-  getFolloweesController,
+  getFollowingsController,
   updateProfilePictureController,
 } from "../controllers/users.controller.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
@@ -20,8 +20,7 @@ router.patch("/", authenticate, updateProfileController);
 router.put("/:userId/follow", authenticate, followUserController);
 router.delete("/:userId/follow", authenticate, unfollowUserController);
 router.get("/:userid/followers", authenticate, getFollowersController);
-router.get("/:userid/followers", authenticate, getFolloweesController);
-// multer
+router.get("/:userid/followings", authenticate, getFollowingsController);
 router.patch("/profile-picture", authenticate, updateProfilePictureController);
 
 export default router;
