@@ -180,8 +180,6 @@ const deleteCommentController = async (req, res) => {
   try {
     const tweetId = req.params.tweetId;
     const commentId = req.params.commentId;
-    console.log(tweetId);
-    console.log(commentId);
 
     const deletedComment = await Comment.findOneAndDelete({
       _id: commentId,
