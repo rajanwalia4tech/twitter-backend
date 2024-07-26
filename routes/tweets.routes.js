@@ -10,7 +10,7 @@ import {
   commentOnTweetController,
   deleteCommentController,
 } from "../controllers/tweets.controller.js";
-import { authenticate } from "../middlewares/authMiddleware.js"
+import { authenticate } from "../middlewares/authMiddleware.js";
 
 router.post("/", authenticate, createTweetController);
 router.get("/:userId", getUserTweetsController);

@@ -1,13 +1,18 @@
 import Tweet from "../models/tweets.model.js";
 import Like from "../models/likes.model.js";
 import Comment from "../models/comments.model.js";
+import User from "../models/users.model.js";
 
 // Create a new tweet
 const createTweetController = async (req, res) => {
   try {
     const { content } = req.body;
-    const newTweet = await Tweet.create({ content, userId: req.user.data });
 
+    const tweetedUser = await User.findById(req.user._id);
+    const newTweet = await Tweet.create({ content, userId: req.user._id });
+
+    tweetedUser.tweets.push(newTweet._id);
+    await tweetedUser.save();
     res.status(201).json({
       message: "Tweet created successfully",
       tweet: newTweet,
@@ -45,6 +50,7 @@ const getUserTweetsController = async (req, res) => {
 const editTweetController = async (req, res) => {
   try {
     const { tweetId, newContent } = req.body;
+    console.log(req.user.data);
     const updatedTweet = await Tweet.findOneAndUpdate(
       { _id: tweetId, userId: req.user.data },
       { content: newContent },
@@ -73,9 +79,11 @@ const editTweetController = async (req, res) => {
 const deleteTweetController = async (req, res) => {
   try {
     const tweetId = req.body.tweetId;
+    console.log(tweetId);
+    console.log(req.user._id);
     const deletedTweet = await Tweet.findOneAndDelete({
       _id: tweetId,
-      userId: req.user.data,
+      userId: req.user._id,
     });
 
     if (!deletedTweet) {
@@ -99,14 +107,14 @@ const deleteTweetController = async (req, res) => {
 const likeTweetController = async (req, res) => {
   try {
     const tweetId = req.params.tweetId;
-    const existingLike = await Like.findOne({ tweetId, userId: req.user.data });
+    const existingLike = await Like.findOne({ tweetId, userId: req.user._id });
 
     if (existingLike) {
       return res.status(400).json({ message: "Tweet already liked" });
     }
-
-    const newLike = await Like.create({ tweetId, userId: req.user.data });
-
+    
+    const newLike = await Like.create({ tweetId, userId: req.user._id });
+    
     res.status(200).json({
       message: "Tweet liked successfully",
       like: newLike,
@@ -114,8 +122,8 @@ const likeTweetController = async (req, res) => {
   } catch (error) {
     console.error("Error liking tweet: ", error);
     res
-      .status(500)
-      .json({ message: "Error liking tweet", error: error.message });
+    .status(500)
+    .json({ message: "Error liking tweet", error: error.message });
   }
 };
 
@@ -125,8 +133,9 @@ const unlikeTweetController = async (req, res) => {
     const tweetId = req.params.tweetId;
     const deletedLike = await Like.findOneAndDelete({
       tweetId,
-      userId: req.user.data,
+      userId: req.user._id,
     });
+    console.log(req.user._id);
 
     if (!deletedLike) {
       return res.status(400).json({ message: "Like not found" });
@@ -150,7 +159,7 @@ const commentOnTweetController = async (req, res) => {
     const { content } = req.body;
     const newComment = await Comment.create({
       tweetId,
-      userId: req.user.data,
+      userId: req.user._id,
       content,
     });
 
@@ -171,10 +180,13 @@ const deleteCommentController = async (req, res) => {
   try {
     const tweetId = req.params.tweetId;
     const commentId = req.params.commentId;
+    console.log(tweetId);
+    console.log(commentId);
+
     const deletedComment = await Comment.findOneAndDelete({
       _id: commentId,
       tweetId,
-      userId: req.user.data,
+      userId: req.user._id,
     });
 
     if (!deletedComment) {

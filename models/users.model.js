@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  tweets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tweet" }],
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
