@@ -50,3 +50,8 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;
+
+```
+## Future Update's 
+- Use multer for file uploads.
+- Use EJS for basic UI.
