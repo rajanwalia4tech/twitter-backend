@@ -1,8 +1,26 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const {userController} = require("../controllers");
-// all routes are prefixed with  /user
-router.post("/",userController.signup);
+import {
+  signupController,
+  signInController,
+  profileController,
+  updateProfileController,
+  followUserController,
+  unfollowUserController,
+  getFollowersController,
+  getFollowingsController,
+  updateProfilePictureController,
+} from "../controllers/users.controller.js";
+import { authenticate } from "../middlewares/authMiddleware.js";
 
-router.get("/profile",userController.getUserProfile);
-module.exports = router;
+router.post("/signup", signupController);
+router.post("/signin", signInController);
+router.get("/profile", authenticate, profileController);
+router.patch("/", authenticate, updateProfileController);
+router.put("/:userId/follow", authenticate, followUserController);
+router.delete("/:userId/follow", authenticate, unfollowUserController);
+router.get("/:userid/followers", authenticate, getFollowersController);
+router.get("/:userid/followings", authenticate, getFollowingsController);
+router.patch("/profile-picture", authenticate, updateProfilePictureController);
+
+export default router;

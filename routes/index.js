@@ -1,10 +1,10 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const usersRoutes = require("./users.routes");
-const tweetsRoutes = require("./tweets.routes");
+import usersRoutes from "./users.routes.js";
+import tweetsRoutes from "./tweets.routes.js";
 
-router.use("/users",usersRoutes);
+router.use("/users", usersRoutes);
 
-router.use("/tweets",tweetsRoutes);
+router.use("/tweets", tweetsRoutes);
 
-module.exports = router;
+export { router };
